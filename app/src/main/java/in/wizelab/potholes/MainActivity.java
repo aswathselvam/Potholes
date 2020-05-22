@@ -43,11 +43,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int dataPoint =0, calibCount=0,WINDOW_SIZE=10;
     float[] x=new float[WINDOW_SIZE],y=new float[WINDOW_SIZE],z=new float[WINDOW_SIZE];
     float[][] Rotation;
-    float sumx,sumy,sumz,sdx,sdy,sdz,soqx,soqy,soqz,maxx,maxy, maxz, minx, miny, minz;
+    float sumx,sumy,sumz,sdx,sdy,sdz,soqx,soqy,soqz,varx,vary,varz,maxx,maxy, maxz, minx, miny, minz,meanx,meany, meanz;
     float offsetx,offsety,offsetz,magoffset,unitoffsetx,unitoffsety,unitoffsetz;
+    double prediction;
     boolean calibrated=false;
     boolean accelTriggered =false;
     long time;
+    static {
+        System.loadLibrary("main");
+    }
+    public native double doubleFromJNI(double[] x);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             x[i]=y[i]=z[i]=0;
         }
         sumx=sumy=sumz=sdx=sdy=sdz=0;
+        double[] ar={-0.0001d,-0.0281d,9.7167d,0.1843d,0.2151d,0.1073d};
+        prediction=doubleFromJNI(ar);
+        Log.d("MainActivity",String.valueOf(prediction));
         //WebView webView =(WebView) findViewById(R.id.webView);
         //webView.setWebViewClient(new WebViewClient());
         //webView.setWebChromeClient(new WebChromeClient());
@@ -91,18 +99,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //Log.d("MainActivity", "X:"+sensorEvent.values[0]);
 
         //sensorManager.getRotationMatrixFromVector();
-        Log.d("MainActivity","RR:"+(System.currentTimeMillis()-time));
-        if(System.currentTimeMillis()-time<50){
-            //return;
+        //Log.d("MainActivity","RR:"+(System.currentTimeMillis()-time));
+        if(System.currentTimeMillis()-time<15){
+            return;
         }
         time=System.currentTimeMillis();
         if(!enable_detection){
             return;
         }
         if(calibrated){
-            x[dataPoint]=sensorEvent.values[0]-offsetx;
-            y[dataPoint]=sensorEvent.values[1]-offsety;
-            z[dataPoint]=sensorEvent.values[2]-offsetz;
+
+            x[dataPoint]=sensorEvent.values[0];
+            y[dataPoint]=sensorEvent.values[1];
+            z[dataPoint]=sensorEvent.values[2];
+            /*
             for(int j=0;j<3;j++){
                 x[dataPoint]+=x[dataPoint]*Rotation[0][j];
             }
@@ -113,21 +123,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 z[dataPoint] += z[dataPoint]*Rotation[2][j];
             }
             Log.d("MainActivity","x:" +x[dataPoint]+" y:"+y[dataPoint]+" z:"+z[dataPoint]);
+            */
+
             dataPoint =(dataPoint +1);
             dataPoint = dataPoint % WINDOW_SIZE;
-            sumx=sumy=sumz=0;
+            sumx=sumy=sumz=soqx=soqy=soqz=0;
             for(int j=0;j<WINDOW_SIZE;j++){
                 sumx+=x[j];
                 sumy+=y[j];
                 sumz+=z[j];
                 soqx+=x[j]*x[j];
-                soqy+=x[j]*x[j];
-                soqz+=x[j]*x[j];
+                soqy+=y[j]*y[j];
+                soqz+=z[j]*z[j];
             }
-            sdx=(soqx/WINDOW_SIZE)-(sumx/WINDOW_SIZE);
-            sdy=(soqy/WINDOW_SIZE)-(sumy/WINDOW_SIZE);
-            sdz=(soqz/WINDOW_SIZE)-(sumz/WINDOW_SIZE);
-            Log.d("MainActivity","sdz"+sdx+" sdy"+sdy+" sdz"+sdz);
+            meanx=sumx/WINDOW_SIZE;
+            meany=sumy/WINDOW_SIZE;
+            meanz=sumz/WINDOW_SIZE;
+            varx=(soqx/WINDOW_SIZE)-(meanx);
+            vary=(soqy/WINDOW_SIZE)-(meany);
+            varz=(soqz/WINDOW_SIZE)-(meanz);
+            sdx=(float)Math.sqrt(varx);
+            sdy=(float)Math.sqrt(vary);
+            sdz=(float)Math.sqrt(varz);
+            double[] arr={(double)meanx,(double)meany,(double)meanz,(double)sdx,(double)sdy,(double)sdz };
+            prediction=doubleFromJNI(arr);
+
+            Log.d("MainActivity","Pred: "+prediction);
         }else{
             sumx+=sensorEvent.values[0];
             sumy+=sensorEvent.values[0];
@@ -226,4 +247,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
         thread.start();
     }
+
 }
