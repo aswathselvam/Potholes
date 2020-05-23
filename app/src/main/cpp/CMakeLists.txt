@@ -17,8 +17,6 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-        svmPredict.c
-        main.c
         #rt_nonfinite.c
         #rtGetInf.c
         ${SOURCES}

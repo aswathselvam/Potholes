@@ -5,7 +5,7 @@
  * File: svmPredict.h
  *
  * MATLAB Coder version            : 4.3
- * C/C++ source code generated on  : 22-May-2020 12:13:57
+ * C/C++ source code generated on  : 23-May-2020 16:32:18
  */
 
 #ifndef SVMPREDICT_H
@@ -18,7 +18,7 @@
 #include "svmPredict_types.h"
 
 /* Function Declarations */
-extern double svmPredict(const double arr[6]);
+extern double svmPredict(const double arr[12]);
 extern void svmPredict_init(void);
 
 #endif

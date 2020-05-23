@@ -5,7 +5,7 @@
  * File: Gaussian.h
  *
  * MATLAB Coder version            : 4.3
- * C/C++ source code generated on  : 22-May-2020 12:13:57
+ * C/C++ source code generated on  : 23-May-2020 16:32:18
  */
 
 #ifndef GAUSSIAN_H
@@ -18,8 +18,8 @@
 #include "svmPredict_types.h"
 
 /* Function Declarations */
-extern void Gaussian(const double svT[126], const double svInnerProduct[21],
-                     const double x[6], double kernelProduct[21]);
+extern void Gaussian(const double svT[5448], const double svInnerProduct[454],
+                     const double x[12], double kernelProduct[454]);
 
 #endif
 

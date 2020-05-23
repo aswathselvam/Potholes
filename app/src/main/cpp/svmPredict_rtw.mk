@@ -2,7 +2,7 @@
 ## Makefile generated for MATLAB file/project 'svmPredict'. 
 ## 
 ## Makefile     : svmPredict_rtw.mk
-## Generated on : Fri May 22 12:13:20 2020
+## Generated on : Sat May 23 16:32:36 2020
 ## MATLAB Coder version: 4.3 (R2019b)
 ## 
 ## Build Info:
@@ -28,7 +28,7 @@ MATLAB_ROOT               = C:/PROGRA~1/MATLAB/R2019b
 MATLAB_BIN                = C:/PROGRA~1/MATLAB/R2019b/bin
 MATLAB_ARCH_BIN           = $(MATLAB_BIN)/win64
 MASTER_ANCHOR_DIR         = 
-START_DIR                 = G:/Competition/Ericsson/MATLAB/matlabCoderApp/app/src/main/cpp
+START_DIR                 = G:/Competition/Ericsson/APP/app/src/main/cpp
 TGT_FCN_LIB               = None
 SOLVER_OBJ                = 
 CLASSIC_INTERFACE         = 0

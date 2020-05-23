@@ -15,6 +15,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.OutputStream;
@@ -24,7 +25,8 @@ import java.net.Socket;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
     private SensorManager sensorManager;
-    private Sensor sensor;
+    private Sensor mAccelsensor, mGyrosensor;
+    String sensorName;
 
     //sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
     //sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
@@ -42,13 +44,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     int dataPoint =0, calibCount=0,WINDOW_SIZE=10;
     float[] x=new float[WINDOW_SIZE],y=new float[WINDOW_SIZE],z=new float[WINDOW_SIZE];
+    float[] xg=new float[WINDOW_SIZE],yg=new float[WINDOW_SIZE],zg=new float[WINDOW_SIZE];
     float[][] Rotation;
     float sumx,sumy,sumz,sdx,sdy,sdz,soqx,soqy,soqz,varx,vary,varz,maxx,maxy, maxz, minx, miny, minz,meanx,meany, meanz;
+    float sumxg,sumyg,sumzg,sdxg,sdyg,sdzg,soqxg,soqyg,soqzg,varxg,varyg,varzg,maxxg,maxyg, maxzg, minxg, minyg, minzg,meanxg,meanyg, meanzg;
+
     float offsetx,offsety,offsetz,magoffset,unitoffsetx,unitoffsety,unitoffsetz;
     double prediction;
-    boolean calibrated=false;
+    boolean calibrated=true;
     boolean accelTriggered =false;
     long time;
+
+    TextView tvCount;
+    int count;
     static {
         System.loadLibrary("main");
     }
@@ -58,10 +66,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this, sensor, sensorManager.SENSOR_DELAY_GAME);
+        tvCount=(TextView)findViewById(R.id.tvDetected);
 
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mAccelsensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mGyrosensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -79,8 +88,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             x[i]=y[i]=z[i]=0;
         }
         sumx=sumy=sumz=sdx=sdy=sdz=0;
-        double[] ar={-0.0001d,-0.0281d,9.7167d,0.1843d,0.2151d,0.1073d};
-        prediction=doubleFromJNI(ar);
+        //double[] arr={-0.2114  , -2.6086 ,  10.0036  ,  1.1884  ,  0.9656  ,  3.5812   , 8.4569 ,  -9.9138  , -1.8262  ,  5.5666  , 13.1518  ,  1.8972};
+        double[] arr={-0.8464  , -1.7438   , 9.6011 ,   0.1285   , 0.2934 ,   0.3908 ,  -0.6621 ,  -0.1646  ,  0.4073  ,  0.3701   , 0.7951   , 0.1004};
+
+        prediction=doubleFromJNI(arr);
         Log.d("MainActivity",String.valueOf(prediction));
         //WebView webView =(WebView) findViewById(R.id.webView);
         //webView.setWebViewClient(new WebViewClient());
@@ -93,25 +104,44 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //webView.loadUrl("http://google.com");
         //webView.loadUrl("http://localhost:1880/worldmap/");
     }
-    boolean enable_detection=true;
+
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, mAccelsensor, sensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, mGyrosensor, SensorManager.SENSOR_DELAY_GAME);
+    }
+
+
+    boolean enable_detection=true, potholeDetected=false;
+    float diffx=0,diffy=0,diffz=0;
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         //Log.d("MainActivity", "X:"+sensorEvent.values[0]);
 
         //sensorManager.getRotationMatrixFromVector();
         //Log.d("MainActivity","RR:"+(System.currentTimeMillis()-time));
-        if(System.currentTimeMillis()-time<15){
+
+        sensorName = sensorEvent.sensor.getName();
+        Log.d("MainActivity",sensorName+ ": X: " + sensorEvent.values[0] + "; Y: " + sensorEvent.values[1] + "; Z: " + sensorEvent.values[2] + ";");
+        if(sensorName.contentEquals("LSM6DS3 Gyroscope")){
+            xg[dataPoint]=sensorEvent.values[0];
+            yg[dataPoint]=sensorEvent.values[1];
+            zg[dataPoint]=sensorEvent.values[2];
+        }else{
+            x[dataPoint]=sensorEvent.values[0];
+            y[dataPoint]=sensorEvent.values[1];
+            z[dataPoint]=sensorEvent.values[2];
+        }
+        if(System.currentTimeMillis()-time<15 ){
             return;
         }
         time=System.currentTimeMillis();
+
         if(!enable_detection){
             return;
         }
         if(calibrated){
 
-            x[dataPoint]=sensorEvent.values[0];
-            y[dataPoint]=sensorEvent.values[1];
-            z[dataPoint]=sensorEvent.values[2];
             /*
             for(int j=0;j<3;j++){
                 x[dataPoint]+=x[dataPoint]*Rotation[0][j];
@@ -139,16 +169,66 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             meanx=sumx/WINDOW_SIZE;
             meany=sumy/WINDOW_SIZE;
             meanz=sumz/WINDOW_SIZE;
-            varx=(soqx/WINDOW_SIZE)-(meanx);
-            vary=(soqy/WINDOW_SIZE)-(meany);
-            varz=(soqz/WINDOW_SIZE)-(meanz);
+            varx=(soqx/WINDOW_SIZE)-(meanx*meanx);
+            vary=(soqy/WINDOW_SIZE)-(meany*meany);
+            varz=(soqz/WINDOW_SIZE)-(meanz*meanz);
+            varx=Math.abs(varx);
+            vary=Math.abs(vary);
+            varz=Math.abs(varz);
             sdx=(float)Math.sqrt(varx);
             sdy=(float)Math.sqrt(vary);
             sdz=(float)Math.sqrt(varz);
-            double[] arr={(double)meanx,(double)meany,(double)meanz,(double)sdx,(double)sdy,(double)sdz };
-            prediction=doubleFromJNI(arr);
 
-            Log.d("MainActivity","Pred: "+prediction);
+            sumxg=sumyg=sumzg=soqxg=soqyg=soqzg=0;
+            for(int j=0;j<WINDOW_SIZE;j++){
+                sumxg+=xg[j];
+                sumyg+=yg[j];
+                sumzg+=zg[j];
+                soqxg+=xg[j]*xg[j];
+                soqyg+=yg[j]*yg[j];
+                soqzg+=zg[j]*zg[j];
+            }
+            meanxg=sumxg/WINDOW_SIZE;
+            meanyg=sumyg/WINDOW_SIZE;
+            meanzg=sumzg/WINDOW_SIZE;
+            /*
+            diffx=diffy=diffz=0;
+            for( int j=0;j<WINDOW_SIZE;j++){
+                diffx=xg[i]-;
+                diffy=;
+                diffz=;
+            }
+            */
+            varxg=(soqxg/WINDOW_SIZE)-(meanxg*meanxg);
+            varyg=(soqyg/WINDOW_SIZE)-(meanyg*meanyg);
+            varzg=(soqzg/WINDOW_SIZE)-(meanzg*meanzg);
+            varxg=Math.abs(varxg);
+            varyg=Math.abs(varyg);
+            varzg=Math.abs(varzg);
+
+            //Log.d("Variance:",varx+":"+vary+":"+varz+":");
+            sdxg=(float)Math.sqrt(varxg);
+            sdyg=(float)Math.sqrt(varyg);
+            sdzg=(float)Math.sqrt(varzg);
+            double[] arr={(double)meanx,(double)meany,(double)meanz,(double)sdx,(double)sdy,(double)sdz,
+                    (double)meanxg,(double)meanyg,(double)meanzg,(double)sdxg,(double)sdyg,(double)sdzg,
+            };
+            //Log.d("Input",arr[0]+" "+arr[1]+" "+arr[2]+" "+arr[3]+" "+arr[4]+" "+arr[5]+" "+arr[6]+" "
+            //      + arr[7]+" "+arr[8]+" "+arr[9]+" "+arr[10]+" "+arr[11]);
+
+            prediction=doubleFromJNI(arr);
+            if (potholeDetected && prediction==1){
+                potholeDetected=false;
+            }
+            if(prediction==-1 && !potholeDetected){
+                //Schmidt trigger
+                potholeDetected=true;
+                //Timeout 20seconds
+                time=System.currentTimeMillis()+20000;
+                count++;
+                tvCount.setText(String.valueOf(count));
+            }
+            //Log.d("MainActivity","Pred: "+prediction);
         }else{
             sumx+=sensorEvent.values[0];
             sumy+=sensorEvent.values[0];
