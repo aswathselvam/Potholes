@@ -2,7 +2,7 @@
 ## Makefile generated for MATLAB file/project 'svmPredict'. 
 ## 
 ## Makefile     : svmPredict_rtw.mk
-## Generated on : Sat May 23 16:32:36 2020
+## Generated on : Sat May 23 21:43:49 2020
 ## MATLAB Coder version: 4.3 (R2019b)
 ## 
 ## Build Info:
@@ -159,7 +159,7 @@ DEFINES = $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/rt_nonfinite.c $(START_DIR)/rtGetNaN.c $(START_DIR)/rtGetInf.c $(START_DIR)/svmPredict_data.c $(START_DIR)/svmPredict_initialize.c $(START_DIR)/svmPredict_terminate.c $(START_DIR)/svmPredict.c $(START_DIR)/Gaussian.c
+SRCS = $(START_DIR)/rt_nonfinite.c $(START_DIR)/rtGetNaN.c $(START_DIR)/rtGetInf.c $(START_DIR)/svmPredict_data.c $(START_DIR)/svmPredict_initialize.c $(START_DIR)/svmPredict_terminate.c $(START_DIR)/svmPredict.c $(START_DIR)/Linear.c
 
 ALL_SRCS = $(SRCS)
 
@@ -167,7 +167,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = rt_nonfinite.obj rtGetNaN.obj rtGetInf.obj svmPredict_data.obj svmPredict_initialize.obj svmPredict_terminate.obj svmPredict.obj Gaussian.obj
+OBJS = rt_nonfinite.obj rtGetNaN.obj rtGetInf.obj svmPredict_data.obj svmPredict_initialize.obj svmPredict_terminate.obj svmPredict.obj Linear.obj
 
 ALL_OBJS = $(OBJS)
 
@@ -298,7 +298,7 @@ svmPredict.obj : $(START_DIR)/svmPredict.c
 	$(CC) $(CFLAGS) -Fo"$@" $(subst /,\,"$<")
 
 
-Gaussian.obj : $(START_DIR)/Gaussian.c
+Linear.obj : $(START_DIR)/Linear.c
 	$(CC) $(CFLAGS) -Fo"$@" $(subst /,\,"$<")
 
 

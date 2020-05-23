@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float sumx,sumy,sumz,sdx,sdy,sdz,soqx,soqy,soqz,varx,vary,varz,maxx,maxy, maxz, minx, miny, minz,meanx,meany, meanz;
     float sumxg,sumyg,sumzg,sdxg,sdyg,sdzg,soqxg,soqyg,soqzg,varxg,varyg,varzg,maxxg,maxyg, maxzg, minxg, minyg, minzg,meanxg,meanyg, meanzg;
 
+    String effectOfRiding="None";
     float offsetx,offsety,offsetz,magoffset,unitoffsetx,unitoffsety,unitoffsetz;
     double prediction;
     boolean calibrated=true;
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //Log.d("MainActivity","RR:"+(System.currentTimeMillis()-time));
 
         sensorName = sensorEvent.sensor.getName();
-        Log.d("MainActivity",sensorName+ ": X: " + sensorEvent.values[0] + "; Y: " + sensorEvent.values[1] + "; Z: " + sensorEvent.values[2] + ";");
+        //Log.d("MainActivity",sensorName+ ": X: " + sensorEvent.values[0] + "; Y: " + sensorEvent.values[1] + "; Z: " + sensorEvent.values[2] + ";");
         if(sensorName.contentEquals("LSM6DS3 Gyroscope")){
             xg[dataPoint]=sensorEvent.values[0];
             yg[dataPoint]=sensorEvent.values[1];
@@ -214,9 +215,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     (double)meanxg,(double)meanyg,(double)meanzg,(double)sdxg,(double)sdyg,(double)sdzg,
             };
             //Log.d("Input",arr[0]+" "+arr[1]+" "+arr[2]+" "+arr[3]+" "+arr[4]+" "+arr[5]+" "+arr[6]+" "
-            //      + arr[7]+" "+arr[8]+" "+arr[9]+" "+arr[10]+" "+arr[11]);
+             //    + arr[7]+" "+arr[8]+" "+arr[9]+" "+arr[10]+" "+arr[11]);
 
             prediction=doubleFromJNI(arr);
+
             if (potholeDetected && prediction==1){
                 potholeDetected=false;
             }
@@ -224,8 +226,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //Schmidt trigger
                 potholeDetected=true;
                 //Timeout 20seconds
-                time=System.currentTimeMillis()+20000;
+                time=System.currentTimeMillis()+500;
                 count++;
+                if(sdz>4.8){
+                    effectOfRiding="High";
+                }else if(sdz>2.8){
+                    effectOfRiding="Moderate";
+                }else if(sdz>1.8){
+                    effectOfRiding="Low";
+                }else{
+                    effectOfRiding="Very Low";
+                }
+                effectOfRiding="\""+effectOfRiding+"\"";
+                accelTriggered=true;
                 tvCount.setText(String.valueOf(count));
             }
             //Log.d("MainActivity","Pred: "+prediction);
@@ -263,7 +276,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         output = new PrintWriter(out,true);
                         double w=10.1,l=12.2,d=4.4;
                         String url="\""+"https://i.imgur.com/kflMpiN.png"+"\"";
-                        output.println("{\"lat\":"+lat+",\"lon\":"+lon+",\"width\":"+w+",\"len\":"+l+",\"depth\":"+d+",\"url\":"+url+"}");
+                        output.println("{\"lat\":"+lat+",\"lon\":"+lon+",\"width\":"+w+",\"len\":"+l
+                                +",\"num\":"+1+",\"area\":"+0+",\"effect\":"+effectOfRiding+",\"url\":"+url+"}");
                         socket.close();
                         //Toast.makeText(getApplicationContext(), "Pothole Reported", Toast.LENGTH_LONG).show();
                         Log.d("Socket", "success");
@@ -275,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             });
             thread.start();
             }
+        accelTriggered=false;
         }
 
     @Override
