@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     OutputStream out = null;
     PrintWriter output = null;
 
-    int dataPoint =0, calibCount=0,WINDOW_SIZE=10;
+    int dataPoint =0, calibCount=0,WINDOW_SIZE=50;
     float[] x=new float[WINDOW_SIZE],y=new float[WINDOW_SIZE],z=new float[WINDOW_SIZE];
     float[] xg=new float[WINDOW_SIZE],yg=new float[WINDOW_SIZE],zg=new float[WINDOW_SIZE];
     float[][] Rotation;
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     long time;
 
     TextView tvCount;
-    int count;
+    int count=-1;
     static {
         System.loadLibrary("main");
     }
@@ -88,12 +88,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         for(int i=0;i<WINDOW_SIZE;i++){
             x[i]=y[i]=z[i]=0;
         }
+        time=System.currentTimeMillis()+1000;
         sumx=sumy=sumz=sdx=sdy=sdz=0;
         //double[] arr={-0.2114  , -2.6086 ,  10.0036  ,  1.1884  ,  0.9656  ,  3.5812   , 8.4569 ,  -9.9138  , -1.8262  ,  5.5666  , 13.1518  ,  1.8972};
         double[] arr={-0.8464  , -1.7438   , 9.6011 ,   0.1285   , 0.2934 ,   0.3908 ,  -0.6621 ,  -0.1646  ,  0.4073  ,  0.3701   , 0.7951   , 0.1004};
 
         prediction=doubleFromJNI(arr);
-        Log.d("MainActivity",String.valueOf(prediction));
+        //Log.d("MainActivity",String.valueOf(prediction));
         //WebView webView =(WebView) findViewById(R.id.webView);
         //webView.setWebViewClient(new WebViewClient());
         //webView.setWebChromeClient(new WebChromeClient());
@@ -226,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //Schmidt trigger
                 potholeDetected=true;
                 //Timeout 20seconds
-                time=System.currentTimeMillis()+500;
+                time=System.currentTimeMillis()+4000;
                 count++;
                 if(sdz>4.8){
                     effectOfRiding="High";
@@ -241,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 accelTriggered=true;
                 tvCount.setText(String.valueOf(count));
             }
-            //Log.d("MainActivity","Pred: "+prediction);
+            Log.d("MainActivity","Pred: "+prediction);
         }else{
             sumx+=sensorEvent.values[0];
             sumy+=sensorEvent.values[0];
