@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -14,6 +15,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.AndroidException;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -124,6 +126,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //Log.d("MainActivity","RR:"+(System.currentTimeMillis()-time));
 
         sensorName = sensorEvent.sensor.getName();
+
+        dataPoint =(dataPoint +1);
+        dataPoint = dataPoint % WINDOW_SIZE;
         //Log.d("MainActivity",sensorName+ ": X: " + sensorEvent.values[0] + "; Y: " + sensorEvent.values[1] + "; Z: " + sensorEvent.values[2] + ";");
         if(sensorName.contentEquals("LSM6DS3 Gyroscope")){
             xg[dataPoint]=sensorEvent.values[0];
@@ -157,8 +162,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d("MainActivity","x:" +x[dataPoint]+" y:"+y[dataPoint]+" z:"+z[dataPoint]);
             */
 
-            dataPoint =(dataPoint +1);
-            dataPoint = dataPoint % WINDOW_SIZE;
             sumx=sumy=sumz=soqx=soqy=soqz=0;
             for(int j=0;j<WINDOW_SIZE;j++){
                 sumx+=x[j];
@@ -222,12 +225,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             if (potholeDetected && prediction==1){
                 potholeDetected=false;
+                tvCount.setTextColor(Color.GRAY);
             }
             if(prediction==-1 && !potholeDetected){
+                tvCount.setTextColor(Color.RED);
                 //Schmidt trigger
                 potholeDetected=true;
                 //Timeout 20seconds
-                time=System.currentTimeMillis()+4000;
+                time=System.currentTimeMillis()+2000;
                 count++;
                 if(sdz>4.8){
                     effectOfRiding="High";
@@ -267,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if(accelTriggered) {
             Log.d("MainActivity", "X:"+sensorEvent.values[0]);
-
+            accelTriggered=false;
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -290,7 +295,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             });
             thread.start();
             }
-        accelTriggered=false;
         }
 
     @Override
