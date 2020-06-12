@@ -8,17 +8,15 @@
 
 ## Data Acquisition
 __Format:__ Time-stamp, Accel X, Accel y, Accel Z, Gyro X, Gyro y, Gyro z 
-![alt Data Acquisition](https://user-images.githubusercontent.com/7314342/84469528-debd9c80-ac9e-11ea-8f25-9d5a15c2948d.png)
-
 
 ## Data modeling 
-Accelerometer data plot Raw data plot, Mean, Standard Deviation
+Accelerometer data plot Raw data plot, Mean, Standard Deviation:
 ![alt Accelerometer data plot](https://user-images.githubusercontent.com/7314342/84470416-f26a0280-aca0-11ea-8fc1-d0a50099a787.png)
 
-Gyroscope data plot Raw data plot, Mean, Standard Deviation
+Gyroscope data plot Raw data plot, Mean, Standard Deviation:
 ![alt Gyroscope data plot](https://user-images.githubusercontent.com/7314342/84470469-0a418680-aca1-11ea-9ade-d4b96ba2bf5a.png)
 
-Confusion matrix
+Confusion matrix:
 ![alt Confusion matrix](https://user-images.githubusercontent.com/7314342/84469612-1af0fd00-ac9f-11ea-8e7d-966416111ba9.png)
 
 ## Export model from MATLAB to C code
