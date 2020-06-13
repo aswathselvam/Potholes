@@ -14,6 +14,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.AndroidException;
 import android.util.Log;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     long time;
 
     TextView tvCount;
+    MediaPlayer mp;
     int count=-1;
     static {
         System.loadLibrary("main");
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tvCount=(TextView)findViewById(R.id.tvDetected);
-
+        mp=MediaPlayer.create(this,R.raw.short_blips);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelsensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mGyrosensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -229,9 +231,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             if(prediction==-1 && !potholeDetected){
                 tvCount.setTextColor(Color.RED);
+                mp.start();
                 //Schmidt trigger
                 potholeDetected=true;
-                //Timeout 20seconds
+                //Timeout 2seconds
                 time=System.currentTimeMillis()+2000;
                 count++;
                 if(sdz>4.8){
