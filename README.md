@@ -1,4 +1,5 @@
 # Realtime Pothole Detection
+Research paper is available here: [google scholar](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=sgsW0BYAAAAJ&citation_for_view=sgsW0BYAAAAJ:u-x6o8ySG0sC), [arxiv]()
 
 ## Idea
 * Mobile phone centric detection 
@@ -21,6 +22,7 @@ Confusion matrix:
 
 ## Export model from MATLAB to C code
 Export trained model to C code using MATLAB coder
+SVM Model and C Code generation repo is available here: https://github.com/aswathselvam/pothole_MATLAB
 
 ## Import model C code in Android Studio
 Use JNI to access the svmPredict() function
